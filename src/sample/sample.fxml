@@ -1,0 +1,43 @@
+<?language javascript?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<GridPane fx:controller="sample.Controller"
+          xmlns:fx="http://javafx.com/fxml" alignment="center" hgap="10" vgap="10">
+
+    <VBox>
+        <Label fx:id="titleOfSong">Song Title:</Label>
+
+        <HBox fx:id="sliderElement">
+            <Text fx:id="currentSongDuration"/>
+            <Slider fx:id="songSliderBar"/>
+            <Text fx:id="totalSongDuration_remainingTime"/>
+        </HBox>
+
+        <ButtonBar fx:id="fileButtonBar">
+            <buttons>
+                <Button fx:id="fileChooserButton" ButtonBar.buttonData="LEFT" onAction="#chooseSongWasClicked">Select a
+                    Song
+                </Button>
+                <Button fx:id="directoryChooserButton" ButtonBar.buttonData="RIGHT"
+                        onAction="#chooseDirectoryWasClicked">
+                    Select a Directory
+                </Button>
+            </buttons>
+        </ButtonBar>
+
+        <ButtonBar fx:id="musicButtonBar">
+            <buttons>
+                <Button fx:id="previous" ButtonBar.buttonData="LEFT">Previous</Button>
+                <Button fx:id="playPause"/>
+                <Button fx:id="next" ButtonBar.buttonData="RIGHT">Next</Button>
+            </buttons>
+        </ButtonBar>
+
+    </VBox>
+
+
+</GridPane>

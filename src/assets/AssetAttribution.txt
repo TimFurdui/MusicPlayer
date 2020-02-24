@@ -1,0 +1,9 @@
+Assets used in this project are attributed to the following resources:
+
+The icons used in this project are from FlatIcon.com
+
+Authors used are:
+ - RoundIcons for the play button
+ - Pixel Perfect for the pause button
+ - for the previous button
+ - for the next button

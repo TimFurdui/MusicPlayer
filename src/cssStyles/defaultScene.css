@@ -1,0 +1,37 @@
+#titleOfSong {
+    -fx-font: 18px "Serif";
+    -fx-text-alignment: center;
+}
+
+#songSliderBar {
+    -fx-min-width: 50px;
+}
+
+#playPause {
+}
+
+#previous {
+
+}
+
+#next {
+
+}
+
+HBox {
+    -fx-spacing: 3px;
+}
+
+Seperator {
+    -fx-orientation: horizontal;
+}
+
+#fileButtonBar{
+    -fx-padding: 15px;
+}
+#musicButtonBar{
+    -fx-padding: 15px;
+}
+
+#sliderElement{
+}
