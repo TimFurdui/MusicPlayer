@@ -11,29 +11,29 @@
     <VBox>
         <Label fx:id="titleOfSong">Song Title:</Label>
 
-        <HBox fx:id="sliderElement">
+        <HBox>
             <Text fx:id="currentSongDuration"/>
             <Slider fx:id="songSliderBar"/>
             <Text fx:id="totalSongDuration_remainingTime"/>
         </HBox>
 
-        <ButtonBar fx:id="fileButtonBar">
+        <ButtonBar>
             <buttons>
-                <Button fx:id="fileChooserButton" ButtonBar.buttonData="LEFT" onAction="#chooseSongWasClicked">Select a
+                <Button ButtonBar.buttonData="LEFT" onAction="#chooseSongWasClicked">Select a
                     Song
                 </Button>
-                <Button fx:id="directoryChooserButton" ButtonBar.buttonData="RIGHT"
+                <Button ButtonBar.buttonData="RIGHT"
                         onAction="#chooseDirectoryWasClicked">
                     Select a Directory
                 </Button>
             </buttons>
         </ButtonBar>
 
-        <ButtonBar fx:id="musicButtonBar">
+        <ButtonBar>
             <buttons>
-                <Button fx:id="previous" ButtonBar.buttonData="LEFT">Previous</Button>
+                <Button fx:id="previous" ButtonBar.buttonData="LEFT" onAction="#onPreviousClick">Previous</Button>
                 <Button fx:id="playPause"/>
-                <Button fx:id="next" ButtonBar.buttonData="RIGHT">Next</Button>
+                <Button fx:id="next" ButtonBar.buttonData="RIGHT" onAction="#onNextClick">Next</Button>
             </buttons>
         </ButtonBar>
 

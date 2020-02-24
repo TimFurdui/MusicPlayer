@@ -1,18 +1,11 @@
 package sample;
 
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.text.Text;
@@ -30,16 +23,12 @@ public class Controller {
     @FXML
     private Slider songSliderBar;
     @FXML
-    private Button fileChooserButton, next, previous, playPause, directoryChooserButton;
-    @FXML
-    private ButtonBar fileButtonBar, musicButtonBar;
-    @FXML
-    private HBox sliderElement;
+    private Button previous, playPause, next;
     @FXML
     private Text currentSongDuration, totalSongDuration_remainingTime;
 
     private MediaPlayer mediaPlayer;
-    private File songFile, songPath;
+    private File songFile;
     private File[] songQueue;
     private int currentSongIndex = 0;
 
@@ -63,14 +52,14 @@ public class Controller {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setTitle("Select folder containing music");
         //Get scenegraph by referencing node already added
-        songPath = directoryChooser.showDialog(titleOfSong.getScene().getWindow());
+        File songPath = directoryChooser.showDialog(titleOfSong.getScene().getWindow());
         songQueue = songPath.listFiles();
         createMediaElements();
     }
 
     public void initialize() {
         addAllListeners();
-        playPause.setGraphic(new ImageView(new Image("assets/play.png")));
+        playPause.setDisable(true);
     }
 
     private void createMediaElements() {
@@ -84,6 +73,8 @@ public class Controller {
             mediaPlayer.stop();
 
         mediaPlayer.setAutoPlay(true);
+        playPause.setDisable(false);
+        playPause.setGraphic(new ImageView(new Image("assets/pause.png")));
 
         //Since the MediaPlayer is asynchronous we need to set a listener for when it's ready
         handleMediaPlayerWhenReady();
@@ -98,70 +89,79 @@ public class Controller {
 
     //Listener for asynchronous MediaPlayer object
     private void handleMediaPlayerWhenReady() {
-        mediaPlayer.setOnReady(new Runnable() {
-            @Override
-            public void run() {
-                songSliderBar.setMax(mediaPlayer.getTotalDuration().toSeconds());
-                //Sets the title and removed the file type
-                String songPlaying = new File(mediaPlayer.getMedia().getSource()).getName().replace("%20", " ");
-                titleOfSong.setText(songPlaying.substring(0, songPlaying.length() - 4));
+        mediaPlayer.setOnReady(() -> {
+            songSliderBar.setMax(mediaPlayer.getTotalDuration().toSeconds());
+            //Sets the title and removed the file type
+            String songPlaying = new File(mediaPlayer.getMedia().getSource()).getName().replace("%20", " ");
+            titleOfSong.setText(songPlaying.substring(0, songPlaying.length() - 4));
 
-                //Listener for time passed which sets currentTime
-                mediaPlayer.currentTimeProperty().addListener((observableValue, oldTime, newTime) -> {
-                    int currentTime = (int) newTime.toSeconds();
-                    int totalTime = (int) mediaPlayer.getTotalDuration().toSeconds();
-                    int remainingTime = totalTime - currentTime;
+            //Listener for time passed which sets currentTime
+            mediaPlayer.currentTimeProperty().addListener((observableValue, oldTime, newTime) -> {
+                Double currentTime = newTime.toSeconds();
+                Double totalTime = mediaPlayer.getTotalDuration().toSeconds();
+                int remainingTime = (int) (totalTime - currentTime);
 
-                    currentSongDuration.setText(String.valueOf(currentTime));
-                    totalSongDuration_remainingTime.setText(String.valueOf(remainingTime));
-                });
-                //TODO on click of this element toggle between showing totalTime/remainingTime
+                currentSongDuration.setText(formatSeconds(newTime));
+                totalSongDuration_remainingTime.setText(formatSeconds(remainingTime));
+            });
+            //TODO on click of this element toggle between showing totalTime/remainingTime
 //                totalSongDuration_remainingTime.setText(String.valueOf((int) mediaPlayer.getTotalDuration().toSeconds()));
-            }
         });
     }
 
+    //TODO when integer is in single digits append 0 in front to keep 00:00 format
+    //Formats seconds to minutes and seconds
+    private String formatSeconds(Object object) {
+        int seconds = 0;
+        try {
+
+            if (object instanceof Duration) {
+                seconds = (int) ((Duration) object).toSeconds();
+            }
+            if (object instanceof Integer) {
+                seconds = (Integer) object;
+            }
+
+            int minutes = seconds / 60;
+            seconds %= 60;
+            return minutes + ":" + seconds;
+
+        } catch (IllegalArgumentException e) {
+            return "Object passed to formatSeconds needs to be of type Duration or Integer but was of type : " + object.getClass();
+        }
+    }
+
     private void addListenerToSlideBarElements() {
-        songSliderBar.valueProperty().addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                if (songSliderBar.isValueChanging()) {
-                    mediaPlayer.seek(Duration.seconds(songSliderBar.getValue()));
-                }
+        songSliderBar.valueProperty().addListener(observable -> {
+            if (songSliderBar.isValueChanging()) {
+                mediaPlayer.seek(Duration.seconds(songSliderBar.getValue()));
             }
         });
-        songSliderBar.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                songSliderBar.setValueChanging(true);
-                double value = (mouseEvent.getX() / songSliderBar.getWidth()) * songSliderBar.getMax();
-                songSliderBar.setValue(value);
-                songSliderBar.setValueChanging(false);
-            }
+        songSliderBar.setOnMouseClicked(mouseEvent -> {
+            songSliderBar.setValueChanging(true);
+            double value = (mouseEvent.getX() / songSliderBar.getWidth()) * songSliderBar.getMax();
+            songSliderBar.setValue(value);
+            songSliderBar.setValueChanging(false);
         });
 
     }
 
     private void addListenerToPlayPauseButton() {
-        playPause.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
-                    mediaPlayer.pause();
-                    playPause.setGraphic(new ImageView(new Image("assets/play.png")));
-                } else {
-                    mediaPlayer.play();
-                    playPause.setGraphic(new ImageView(new Image("assets/pause.png")));
-                }
+        playPause.setOnAction(actionEvent -> {
+            if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+                mediaPlayer.pause();
+                playPause.setGraphic(new ImageView(new Image("assets/play.png")));
+            }
+            if (mediaPlayer.getStatus() == MediaPlayer.Status.PAUSED) {
+                mediaPlayer.play();
+                playPause.setGraphic(new ImageView(new Image("assets/pause.png")));
             }
         });
     }
 
     //Syncs the songs SlideBar with the current duration of the song
     private void syncSongSlideBar() {
-        mediaPlayer.currentTimeProperty().addListener((observableValue, oldValue, newValue) -> {
-            songSliderBar.setValue(newValue.toSeconds());
-        });
+        mediaPlayer.currentTimeProperty().addListener((observableValue, oldValue, newValue) -> songSliderBar.setValue(newValue.toSeconds()));
     }
 
     private void handleSingleSong() {
@@ -176,16 +176,14 @@ public class Controller {
 
     //If there is a queue then go to next song in queue once current song is finished
     private void handleEndOfSongInQueue() {
-        mediaPlayer.currentTimeProperty().addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                if (songQueue != null && currentSongIndex != songQueue.length) {
-                    //cast to int to ignore decimal places
-                    int currentTime = (int) mediaPlayer.getCurrentTime().toSeconds();
-                    int remainingTime = (int) mediaPlayer.getTotalDuration().toSeconds();
-                    if (currentTime == remainingTime)
-                        nextSong();
-                }
+        mediaPlayer.currentTimeProperty().addListener(observable -> {
+            if (songQueue != null && currentSongIndex != songQueue.length) {
+
+                //cast to int to ignore decimal places
+                int currentTime = (int) mediaPlayer.getCurrentTime().toSeconds();
+                int remainingTime = (int) mediaPlayer.getTotalDuration().toSeconds();
+                if (currentTime == remainingTime)
+                    nextSong();
             }
         });
     }
@@ -195,6 +193,23 @@ public class Controller {
         createMediaElements();
     }
 
+    @FXML
+    private void onPreviousClick() {
+        if (songQueue != null && currentSongIndex > 0) {
+            currentSongIndex--;
+            System.out.println(currentSongIndex);
+        }
+        createMediaElements();
+    }
+
+    @FXML
+    private void onNextClick() {
+        if (songQueue != null && currentSongIndex < songQueue.length - 1) {
+
+            nextSong();
+            System.out.println(currentSongIndex);
+        }
+    }
     //Move name to helper function
     //Move slider to helper function
 
