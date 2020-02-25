@@ -22,8 +22,7 @@ public class Main extends Application {
         loader.setLocation(getClass().getResource("sample.fxml"));
         Parent root = loader.load();
 
-//        Controller controller = loader.getController();
-        Scene scene = new Scene(root, 352, 206);
+        Scene scene = new Scene(root, 440, 180);
         scene.getStylesheets().add("cssStyles/defaultScene.css");
         primaryStage.setScene(scene);
         primaryStage.show();

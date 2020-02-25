@@ -15,6 +15,7 @@
             <Text fx:id="currentSongDuration"/>
             <Slider fx:id="songSliderBar"/>
             <Text fx:id="totalSongDuration_remainingTime"/>
+            <Slider fx:id="audioSlideBar"/>
         </HBox>
 
         <ButtonBar>
@@ -36,6 +37,8 @@
                 <Button fx:id="next" ButtonBar.buttonData="RIGHT" onAction="#onNextClick">Next</Button>
             </buttons>
         </ButtonBar>
+
+        <Button fx:id="shuffle" onAction="#shuffleSong">Shuffle</Button>
 
     </VBox>
 

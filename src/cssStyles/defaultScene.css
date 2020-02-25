@@ -26,12 +26,21 @@ Seperator {
     -fx-orientation: horizontal;
 }
 
-#fileButtonBar{
-    -fx-padding: 15px;
-}
-#musicButtonBar{
+#fileButtonBar {
     -fx-padding: 15px;
 }
 
-#sliderElement{
+#musicButtonBar {
+    -fx-padding: 15px;
+}
+
+#songSliderBar {
+    -fx-min-width: 250px;
+}
+
+#shuffle {
+}
+
+#audioSlideBar {
+    -fx-max-width: 75px;
 }
