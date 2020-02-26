@@ -41,6 +41,6 @@ Seperator {
 #shuffle {
 }
 
-#audioSlideBar {
+#volumeSlideBar {
     -fx-max-width: 75px;
 }

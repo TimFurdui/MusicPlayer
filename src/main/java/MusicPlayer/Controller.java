@@ -1,4 +1,4 @@
-package sample;
+package MusicPlayer;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -24,7 +24,7 @@ public class Controller {
     @FXML
     private Label titleOfSong;
     @FXML
-    private Slider songSliderBar, audioSlideBar;
+    private Slider songSliderBar, volumeSlideBar;
     @FXML
     private Button previous, playPause, next, shuffle;
     @FXML
@@ -35,6 +35,7 @@ public class Controller {
     private File[] songQueue;
     private int currentSongIndex = 0;
     private boolean isSongDurationToggled = false;
+    private String[] allowedFiles = new String[]{"mp3", "mp4", "aif", "aiff", "wav", "fxm", "flv"};
 
     //No argument constructor used to set controller instance in FXML
     public Controller() {
@@ -42,7 +43,7 @@ public class Controller {
 
 
     @FXML
-    protected void chooseSongWasClicked() /*throws IOException */{
+    protected void chooseSongWasClicked() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select music file");
         //Get scenegraph by referencing node already added
@@ -50,7 +51,7 @@ public class Controller {
         if (songFile == null) {
             throw new NullPointerException("Song Chooser cannot be null");
         } else {
-//            System.out.println(Files.probeContentType(songFile.toPath()));
+            checkFileType(songFile);
             createMediaPlayerWithFile();
             createMediaElements();
         }
@@ -66,6 +67,7 @@ public class Controller {
         if (songQueue == null) {
             throw new NullPointerException("Directory chooser cannot be null");
         } else {
+            checkFileType(songFile);
             createMediaPlayerWithDirectory();
             createMediaElements();
             next.setDisable(false);
@@ -76,42 +78,87 @@ public class Controller {
 
     public void initialize() {
         addAllListeners();
-        disableButtons();
+        setElementsInitialState();
     }
 
-    private void disableButtons() {
+    private void setElementsInitialState() {
         playPause.setDisable(true);
         songSliderBar.setDisable(true);
         next.setDisable(true);
         previous.setDisable(true);
         shuffle.setDisable(true);
+        volumeSlideBar.setDisable(true);
+    }
+
+    private void checkFileType(File file) {
+        String fileType = null;
+
+        try {
+            //If a single song was selected
+            if (songFile != null)
+                fileType = Files.probeContentType(songFile.toPath());
+            //If a directory was selected
+            if (songQueue != null) {
+                for (File file1 : songQueue)
+                    fileType = Files.probeContentType(file1.toPath());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        assert fileType != null;
+        fileType = fileType.substring(fileType.length() - 3);
+
+        for (String fileTypeExtension : allowedFiles) {
+            if (fileTypeExtension.equals(fileType)) {
+                return;
+            }
+        }
+        throw new UnsupportedOperationException("Selected File is incompatible!");
     }
 
     private void createMediaElements() {
 
         //Prevent overlap from selecting another song while one is already playing
-        if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING)
+        if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING || mediaPlayer.getStatus() == MediaPlayer.Status.PAUSED)
             mediaPlayer.stop();
 
         mediaPlayer.setAutoPlay(true);
         playPause.setDisable(false);
         playPause.setGraphic(new ImageView(new Image("assets/pause.png")));
 
-        //Since the MediaPlayer is asynchronous we need to set a listener for when it's ready
         handleMediaPlayerWhenReady();
         syncSongSlideBar();
         handleEndOfSongInQueue();
     }
 
     private void addAllListeners() {
-        addListenerToSlideBarElements();
+        addListenerToSongSlideBar();
+        addListenerToVolumeSlideBar();
         addListenerToPlayPauseButton();
+    }
+
+    private void addListenerToVolumeSlideBar() {
+
+        volumeSlideBar.valueProperty().addListener(observable -> {
+            if (volumeSlideBar.isValueChanging())
+                mediaPlayer.setVolume(volumeSlideBar.getValue() / 100);
+        });
+
+        volumeSlideBar.setOnMouseClicked(mouseEvent -> {
+            volumeSlideBar.setValueChanging(true);
+            double value = (mouseEvent.getX() / volumeSlideBar.getWidth()) * volumeSlideBar.getMax();
+            mediaPlayer.setVolume(value / 100.0);
+            volumeSlideBar.setValueChanging(false);
+        });
     }
 
     //Listener for asynchronous MediaPlayer object
     private void handleMediaPlayerWhenReady() {
         mediaPlayer.setOnReady(() -> {
             songSliderBar.setDisable(false);
+            volumeSlideBar.setDisable(false);
+            volumeSlideBar.setValue(1.0);
             songSliderBar.setMax(mediaPlayer.getTotalDuration().toSeconds());
             //Sets the title and removed the file type
             String songPlaying = new File(mediaPlayer.getMedia().getSource()).getName().replace("%20", " ");
@@ -159,19 +206,19 @@ public class Controller {
         }
     }
 
-    private void addListenerToSlideBarElements() {
+    private void addListenerToSongSlideBar() {
+
         songSliderBar.valueProperty().addListener(observable -> {
-            if (songSliderBar.isValueChanging()) {
+            if (songSliderBar.isValueChanging())
                 mediaPlayer.seek(Duration.seconds(songSliderBar.getValue()));
-            }
         });
+
         songSliderBar.setOnMouseClicked(mouseEvent -> {
             songSliderBar.setValueChanging(true);
             double value = (mouseEvent.getX() / songSliderBar.getWidth()) * songSliderBar.getMax();
             songSliderBar.setValue(value);
             songSliderBar.setValueChanging(false);
         });
-
     }
 
     private void addListenerToPlayPauseButton() {

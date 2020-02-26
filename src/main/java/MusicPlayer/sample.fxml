@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
-<GridPane fx:controller="sample.Controller"
+<GridPane fx:controller="MusicPlayer.Controller"
           xmlns:fx="http://javafx.com/fxml" alignment="center" hgap="10" vgap="10">
 
     <VBox>
@@ -15,7 +15,8 @@
             <Text fx:id="currentSongDuration"/>
             <Slider fx:id="songSliderBar"/>
             <Text fx:id="totalSongDuration_remainingTime"/>
-            <Slider fx:id="audioSlideBar"/>
+            <Slider fx:id="volumeSlideBar">
+            </Slider>
         </HBox>
 
         <ButtonBar>
